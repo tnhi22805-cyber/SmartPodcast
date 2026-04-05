@@ -1,4 +1,5 @@
-package com.example.smartpodcast.data
+package com.example.smartpodcast.data.remote
+
 import retrofit2.http.GET
 import retrofit2.http.Url
 

@@ -1,4 +1,4 @@
-package com.example.smartpodcast.data
+package com.example.smartpodcast.data.model
 
 data class PodcastEpisode(
     val title: String = "",
