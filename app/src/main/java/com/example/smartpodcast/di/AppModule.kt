@@ -8,6 +8,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import androidx.room.Room
+import com.example.smartpodcast.data.local.AppDatabase
+import com.example.smartpodcast.data.local.EpisodeDao
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -16,5 +19,19 @@ object AppModule {
     @Singleton
     fun provideExoPlayer(@ApplicationContext context: Context): ExoPlayer {
         return ExoPlayer.Builder(context).build()
+    }
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
+        return Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "smart_podcast_db"
+        ).fallbackToDestructiveMigration().build()
+    }
+
+    @Provides
+    fun provideEpisodeDao(db: AppDatabase): EpisodeDao {
+        return db.episodeDao()
     }
 }
