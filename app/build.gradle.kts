@@ -71,5 +71,6 @@ dependencies {
     kapt("androidx.room:room-compiler:$room_version")
 
     // Glide (Load ảnh podcast)
-    implementation("github.com.bumptech.glide:glide:4.16.0")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
 }
