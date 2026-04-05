@@ -9,7 +9,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smartpodcast.R
 import com.example.smartpodcast.ui.adapter.EpisodeAdapter
+import com.example.smartpodcast.ui.player.PlayerFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -22,16 +24,27 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
 
         val rvEpisodes = view.findViewById<RecyclerView>(R.id.rvEpisodes)
+
+        // Khởi tạo Adapter và xử lý Click
         episodeAdapter = EpisodeAdapter { episode ->
-            // Sau này An (E) sẽ xử lý nhấn vào đây để phát nhạc
+            val playerFragment = PlayerFragment().apply {
+                arguments = Bundle().apply {
+                    putString("audioUrl", episode.audioUrl)
+                    putString("title", episode.title)
+                }
+            }
+            parentFragmentManager.beginTransaction()
+                .replace(android.R.id.content, playerFragment)
+                .addToBackStack(null)
+                .commit()
         }
 
         rvEpisodes.layoutManager = LinearLayoutManager(requireContext())
         rvEpisodes.adapter = episodeAdapter
 
-        // Quan sát dữ liệu từ ViewModel để hiển thị lên màn hình
+        // Lắng nghe dữ liệu từ ViewModel để hiện lên màn hình
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.episodes.collect { list ->
+            viewModel.episodes.collectLatest { list ->
                 episodeAdapter.updateData(list)
             }
         }
