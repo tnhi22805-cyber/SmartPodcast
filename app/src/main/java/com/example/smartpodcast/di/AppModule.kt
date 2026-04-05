@@ -11,6 +11,8 @@ import javax.inject.Singleton
 import androidx.room.Room
 import com.example.smartpodcast.data.local.AppDatabase
 import com.example.smartpodcast.data.local.EpisodeDao
+import com.example.smartpodcast.data.remote.PodcastApi
+import com.example.smartpodcast.data.repository.PodcastRepository
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -33,5 +35,10 @@ object AppModule {
     @Provides
     fun provideEpisodeDao(db: AppDatabase): EpisodeDao {
         return db.episodeDao()
+    }
+    @Provides
+    @Singleton
+    fun provideRepository(api: PodcastApi, dao: EpisodeDao): PodcastRepository {
+        return PodcastRepository(api, dao)
     }
 }
