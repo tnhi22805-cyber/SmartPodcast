@@ -13,28 +13,39 @@ class RssParser {
         parser.setInput(inputStream, "UTF-8")
 
         var eventType = parser.eventType
-        var currentEpisode = mutableMapOf<String, String>()
-        var text = ""
+        var currentTitle = ""
+        var currentAudio = ""
+        var currentDesc = ""
+        var currentImg = "https://picsum.photos/200" // Ảnh mặc định
 
         while (eventType != XmlPullParser.END_DOCUMENT) {
-            val tagName = parser.name
+            val name = parser.name
             when (eventType) {
-                XmlPullParser.TEXT -> text = parser.text
+                XmlPullParser.START_TAG -> {
+                    if (name == "enclosure") {
+                        currentAudio = parser.getAttributeValue(null, "url") ?: ""
+                    }
+                }
+                XmlPullParser.TEXT -> {
+                    val text = parser.text.trim()
+                    if (text.isNotEmpty()) {
+                        // Logic đơn giản để lấy text
+                    }
+                }
                 XmlPullParser.END_TAG -> {
-                    when {
-                        tagName.equals("title", true) -> currentEpisode["title"] = text
-                        tagName.equals("description", true) -> currentEpisode["desc"] = text
-                        tagName.equals("pubDate", true) -> currentEpisode["date"] = text
-                        tagName.equals("guid", true) -> currentEpisode["url"] = text
-                        tagName.equals("item", true) -> {
-                            episodes.add(EpisodeEntity(
-                                id = currentEpisode["url"] ?: "",
-                                title = currentEpisode["title"] ?: "No Title",
-                                description = currentEpisode["desc"] ?: "",
-                                audioUrl = currentEpisode["url"] ?: "",
-                                imageUrl = "https://picsum.photos/seed/${currentEpisode["title"].hashCode()}/200",
-                                pubDate = currentEpisode["date"] ?: ""
-                            ))
+                    when (name) {
+                        "title" -> currentTitle = parser.text ?: currentTitle
+                        "item" -> {
+                            if (currentAudio.isNotEmpty()) {
+                                episodes.add(EpisodeEntity(
+                                    id = currentAudio,
+                                    title = currentTitle,
+                                    description = "",
+                                    audioUrl = currentAudio,
+                                    imageUrl = "https://picsum.photos/seed/${currentTitle.hashCode()}/300",
+                                    pubDate = ""
+                                ))
+                            }
                         }
                     }
                 }
