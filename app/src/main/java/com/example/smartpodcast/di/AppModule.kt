@@ -45,13 +45,9 @@ object AppModule {
     @Provides
     @Singleton
     fun providePodcastApi(): PodcastApi {
-        val tikXml = TikXml.Builder()
-            .exceptionOnUnreadXml(false)
-            .build()
-
         return Retrofit.Builder()
-            .baseUrl("https://vnexpress.net/")
-            .addConverterFactory(TikXmlConverterFactory.create(tikXml))
+            .baseUrl("https://itunes.apple.com/")
+            .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
             .build()
             .create(PodcastApi::class.java)
     }
