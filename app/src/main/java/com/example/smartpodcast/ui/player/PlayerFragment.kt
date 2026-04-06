@@ -12,7 +12,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.example.smartpodcast.R
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-
+// Advanced Audio Player
 @AndroidEntryPoint
 class PlayerFragment : Fragment(R.layout.fragment_player) {
 
