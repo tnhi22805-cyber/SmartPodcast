@@ -13,7 +13,7 @@ import com.example.smartpodcast.ui.player.PlayerFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-
+// Modern UI Home screen
 @AndroidEntryPoint
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
