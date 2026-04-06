@@ -6,7 +6,7 @@ import com.example.smartpodcast.data.remote.PodcastApi
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
-
+// Data repository
 @Singleton
 class PodcastRepository @Inject constructor(
     private val api: PodcastApi,
