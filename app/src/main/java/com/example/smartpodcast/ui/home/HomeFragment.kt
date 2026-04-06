@@ -25,28 +25,38 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         val rvEpisodes = view.findViewById<RecyclerView>(R.id.rvEpisodes)
 
-        // Khởi tạo Adapter và xử lý Click
+        // 1. Khởi tạo Adapter
         episodeAdapter = EpisodeAdapter { episode ->
-            val playerFragment = PlayerFragment().apply {
-                arguments = Bundle().apply {
-                    putString("audioUrl", episode.audioUrl)
-                    putString("title", episode.title)
-                }
-            }
-            parentFragmentManager.beginTransaction()
-                .replace(android.R.id.content, playerFragment)
-                .addToBackStack(null)
-                .commit()
-        }
 
-        rvEpisodes.layoutManager = LinearLayoutManager(requireContext())
-        rvEpisodes.adapter = episodeAdapter
-
-        // Lắng nghe dữ liệu từ ViewModel để hiện lên màn hình
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.episodes.collectLatest { list ->
-                episodeAdapter.updateData(list)
-            }
-        }
+val playerFragment = PlayerFragment().apply {
+    arguments = Bundle().apply {
+        putString("audioUrl", episode.audioUrl)
+        putString("title", episode.title)
+        putString("imageUrl", episode.imageUrl) // Truyền thêm ảnh
     }
+}
+// Chuyển màn hình
+parentFragmentManager.beginTransaction()
+    .replace(R.id.fragment_container, playerFragment)
+    .addToBackStack(null)
+    .commit()
+
+            android.util.Log.d("DEBUG_CLICK", "Bạn vừa nhấn vào: ${episode.title}")
+}
+
+// 2. Thiết lập RecyclerView
+rvEpisodes.layoutManager = LinearLayoutManager(requireContext())
+rvEpisodes.adapter = episodeAdapter
+
+// 3. Lắng nghe dữ liệu (Chỉ cần 1 khối duy nhất như thế này)
+viewLifecycleOwner.lifecycleScope.launch {
+viewModel.episodes.collectLatest { list ->
+    // Thêm Log ở đây để kiểm tra dữ liệu trong Logcat
+    android.util.Log.d("DEBUG_DATA", "Danh sách podcast có: ${list.size} tập")
+
+    // Cập nhật lên màn hình
+    episodeAdapter.updateData(list)
+}
+}
+}
 }

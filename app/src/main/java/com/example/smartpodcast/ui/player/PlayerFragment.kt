@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.smartpodcast.R
 import dagger.hilt.android.AndroidEntryPoint
@@ -14,21 +15,21 @@ import javax.inject.Inject
 class PlayerFragment : Fragment(R.layout.fragment_player) {
 
     @Inject lateinit var player: ExoPlayer // Lấy cái máy phát nhạc mà Nhi đã setup
+    private val viewModel: PlayerViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val btnPlay = view.findViewById<ImageButton>(R.id.btnPlayPause)
-        val tvTitle = view.findViewById<TextView>(R.id.tvPlayerTitle)
+        val url = arguments?.getString("audioUrl") ?: ""
+        val title = arguments?.getString("title") ?: "Unknown"
 
-        btnPlay.setOnClickListener {
-            if (player.isPlaying) {
-                player.pause()
-                btnPlay.setImageResource(android.R.drawable.ic_media_play)
-            } else {
-                player.play()
-                btnPlay.setImageResource(android.R.drawable.ic_media_pause)
-            }
+        view.findViewById<TextView>(R.id.tvPlayerTitle).text = title
+
+        // Gọi phát nhạc ngay khi vào màn hình player
+        viewModel.playEpisode(url)
+
+        view.findViewById<ImageButton>(R.id.btnPlayPause).setOnClickListener {
+            viewModel.togglePlayPause()
         }
     }
 }

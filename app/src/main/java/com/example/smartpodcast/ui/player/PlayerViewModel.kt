@@ -30,6 +30,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun playEpisode(url: String) {
+        if (url.isEmpty()) return
         val mediaItem = MediaItem.fromUri(url)
         player.setMediaItem(mediaItem)
         player.prepare()
