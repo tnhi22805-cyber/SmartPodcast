@@ -3,6 +3,7 @@ package com.example.smartpodcast.ui.player
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -22,10 +23,15 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
         val url = arguments?.getString("audioUrl") ?: ""
         val title = arguments?.getString("title") ?: "Unknown"
+        val imageUrl = "https://picsum.photos/seed/${title.hashCode()}/300"
 
         view.findViewById<TextView>(R.id.tvPlayerTitle).text = title
 
-        // Gọi phát nhạc ngay khi vào màn hình player
+        // Load ảnh bằng Glide
+        val imgView = view.findViewById<ImageView>(R.id.imgLargePodcast)
+        com.bumptech.glide.Glide.with(this).load(imageUrl).into(imgView)
+
+        // Phát nhạc ngay lập tức
         viewModel.playEpisode(url)
 
         view.findViewById<ImageButton>(R.id.btnPlayPause).setOnClickListener {
