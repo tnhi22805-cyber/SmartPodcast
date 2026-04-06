@@ -4,7 +4,7 @@ import com.example.smartpodcast.data.local.EpisodeEntity
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.InputStream
-
+// Optimized RSS Parser
 class RssParser {
     fun parse(inputStream: InputStream): List<EpisodeEntity> {
         val episodes = mutableListOf<EpisodeEntity>()
