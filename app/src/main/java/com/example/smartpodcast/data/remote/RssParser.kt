@@ -9,43 +9,36 @@ class RssParser {
     fun parse(inputStream: InputStream): List<EpisodeEntity> {
         val episodes = mutableListOf<EpisodeEntity>()
         val factory = XmlPullParserFactory.newInstance()
+        factory.isNamespaceAware = true // Bắt buộc để đọc ảnh itunes:image
         val parser = factory.newPullParser()
         parser.setInput(inputStream, "UTF-8")
 
         var eventType = parser.eventType
-        var currentTitle = ""
-        var currentAudio = ""
-        var currentDesc = ""
-        var currentImg = "https://picsum.photos/200" // Ảnh mặc định
+        var title = ""; var audio = ""; var image = ""; var desc = ""
+        var text = ""
 
         while (eventType != XmlPullParser.END_DOCUMENT) {
-            val name = parser.name
+            val tagName = parser.name
             when (eventType) {
                 XmlPullParser.START_TAG -> {
-                    if (name == "enclosure") {
-                        currentAudio = parser.getAttributeValue(null, "url") ?: ""
+                    if (tagName == "enclosure") {
+                        audio = parser.getAttributeValue(null, "url") ?: ""
+                    }
+                    if (tagName == "image" && parser.prefix == "itunes") {
+                        image = parser.getAttributeValue(null, "href") ?: ""
                     }
                 }
-                XmlPullParser.TEXT -> {
-                    val text = parser.text.trim()
-                    if (text.isNotEmpty()) {
-                        // Logic đơn giản để lấy text
-                    }
-                }
+                XmlPullParser.TEXT -> text = parser.text.trim()
                 XmlPullParser.END_TAG -> {
-                    when (name) {
-                        "title" -> currentTitle = parser.text ?: currentTitle
+                    when (tagName) {
+                        "title" -> title = text
+                        "description" -> desc = text
                         "item" -> {
-                            if (currentAudio.isNotEmpty()) {
-                                episodes.add(EpisodeEntity(
-                                    id = currentAudio,
-                                    title = currentTitle,
-                                    description = "",
-                                    audioUrl = currentAudio,
-                                    imageUrl = "https://picsum.photos/seed/${currentTitle.hashCode()}/300",
-                                    pubDate = ""
-                                ))
+                            if (audio.isNotEmpty()) {
+                                episodes.add(EpisodeEntity(audio, title, desc, audio, image, "Podcast"))
                             }
+                            // Reset biến tạm
+                            title = ""; audio = ""; image = ""; desc = ""
                         }
                     }
                 }
