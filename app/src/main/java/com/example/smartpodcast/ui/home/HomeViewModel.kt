@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.smartpodcast.data.local.EpisodeEntity
 import com.example.smartpodcast.data.remote.PodcastApi
 import com.example.smartpodcast.data.remote.RssParser
-import com.example.smartpodcast.data.repository.PodcastRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,26 +16,36 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val api: PodcastApi, // Khai báo api ở đây để hết lỗi đỏ dòng 34
-    private val repository: PodcastRepository
+    private val api: PodcastApi
 ) : ViewModel() {
 
-    // Khai báo _episodes ở đây để hết lỗi đỏ dòng 38
     private val _episodes = MutableStateFlow<List<EpisodeEntity>>(emptyList())
     val episodes: StateFlow<List<EpisodeEntity>> = _episodes.asStateFlow()
 
     init {
+        // 1. HIỆN NGAY DỮ LIỆU ĐỂ TEST GIAO DIỆN
+        _episodes.value = listOf(
+            EpisodeEntity("id1", "Đang tải dữ liệu thật...", "Vui lòng đợi trong giây lát", "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", "https://picsum.photos/200", "Bây giờ"),
+            EpisodeEntity("id2", "Apple Podcast Podcast", "Nguồn dữ liệu chuẩn từ Spotify/Anchor", "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", "https://picsum.photos/201", "Hôm nay")
+        )
+        // 2. SAU ĐÓ MỚI TẢI THẬT
         loadPodcasts()
     }
 
     private fun loadPodcasts() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // Tải dữ liệu thật từ VnExpress
-                val response = api.getRawRss("https://vnexpress.net/rss/podcast.rss")
-                val parser = RssParser()
-                val realEpisodes = parser.parse(response.byteStream())
-
+                val response = api.getTrendingPodcasts() // Gọi API Apple
+                val realEpisodes = response.results.map {
+                    EpisodeEntity(
+                        id = it.previewUrl ?: "",
+                        title = it.trackName ?: "No Title",
+                        description = it.collectionName ?: "",
+                        audioUrl = it.previewUrl ?: "",
+                        imageUrl = it.artworkUrl100 ?: "",
+                        pubDate = "Apple Podcast"
+                    )
+                }
                 withContext(Dispatchers.Main) {
                     _episodes.value = realEpisodes
                 }

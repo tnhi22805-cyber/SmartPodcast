@@ -8,15 +8,17 @@ import android.widget.SeekBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.lifecycle.lifecycleScope
 import com.example.smartpodcast.R
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+// ... giữ các dòng import cũ ...
 
 @AndroidEntryPoint
 class PlayerFragment : Fragment(R.layout.fragment_player) {
 
-    @Inject lateinit var player: ExoPlayer // Lấy cái máy phát nhạc mà Nhi đã setup
     private val viewModel: PlayerViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -24,36 +26,44 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
         val url = arguments?.getString("audioUrl") ?: ""
         val title = arguments?.getString("title") ?: "Unknown"
+        val imageUrl = arguments?.getString("imageUrl") ?: ""
+
         val btnPlay = view.findViewById<ImageButton>(R.id.btnPlayPause)
         val seekBar = view.findViewById<SeekBar>(R.id.seekBar)
-        val imageUrl = "https://picsum.photos/seed/${title.hashCode()}/300"
 
         view.findViewById<TextView>(R.id.tvPlayerTitle).text = title
-
-        // Load ảnh bằng Glide
         val imgView = view.findViewById<ImageView>(R.id.imgLargePodcast)
         com.bumptech.glide.Glide.with(this).load(imageUrl).into(imgView)
 
-        // Phát nhạc ngay lập tức
+        // 1. Phát nhạc ngay khi vào màn hình
         viewModel.playEpisode(url)
 
-        view.findViewById<ImageButton>(R.id.btnPlayPause).setOnClickListener {
-            viewModel.togglePlayPause()
-        }
-// Cập nhật trạng thái nút bấm
-        player.addListener(object : androidx.media3.common.Player.Listener {
-            override fun onIsPlayingChanged(isPlaying: Boolean) {
-                btnPlay.setImageResource(if (isPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play)
-            }
-        })
+        // 2. Click nút Play/Pause
+        btnPlay.setOnClickListener { viewModel.togglePlayPause() }
 
-// Tua nhạc
+        // 3. Xử lý kéo SeekBar để tua nhạc
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(s: SeekBar?, p: Int, fromUser: Boolean) {
-                if (fromUser) player.seekTo(p.toLong())
+                if (fromUser) viewModel.seekTo(p.toLong())
             }
+
             override fun onStartTrackingTouch(s: SeekBar?) {}
             override fun onStopTrackingTouch(s: SeekBar?) {}
         })
+
+        // 4. Lắng nghe trạng thái để cập nhật Giao diện (Rất quan trọng)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.isPlaying.collect { playing ->
+                btnPlay.setImageResource(if (playing) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play)
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.currentPosition.collect { pos -> seekBar.progress = pos.toInt() }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.duration.collect { dur -> if (dur > 0) seekBar.max = dur.toInt() }
+        }
     }
 }
