@@ -1,9 +1,0 @@
-package com.example.smartpodcast.data
-
-data class PodcastEpisode(
-    val title: String = "",
-    val description: String = "",
-    val audioUrl: String = "",
-    val imageUrl: String = "",
-    val pubDate: String = ""
-)

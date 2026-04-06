@@ -7,14 +7,12 @@ plugins {
 
 android {
     namespace = "com.example.smartpodcast"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.smartpodcast"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -31,45 +29,43 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    // Media3 (Trái tim của App)
+    // Android cơ bản
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.11.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+
+    // Media3 (Phát nhạc)
     val media3_version = "1.2.0"
     implementation("androidx.media3:media3-exoplayer:$media3_version")
     implementation("androidx.media3:media3-session:$media3_version")
     implementation("androidx.media3:media3-ui:$media3_version")
 
-    // Hilt (Dependency Injection - Tiêu chí Kiến trúc)
+    // Hilt (BẮT BUỘC viết thế này để hết lỗi metadata)
     implementation("com.google.dagger:hilt-android:2.48")
     kapt("com.google.dagger:hilt-compiler:2.48")
 
-    // Retrofit & XML Parser (Dành cho RSS)
+    // TikXml (Đọc RSS - Chỗ này hay bị đỏ nhất, hãy viết y hệt thế này)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.tickaroo.tikxml:annotation:0.8.13")
     implementation("com.tickaroo.tikxml:core:0.8.13")
     implementation("com.tickaroo.tikxml:retrofit-converter:0.8.13")
+    kapt("com.tickaroo.tikxml:processor:0.8.13")
 
-    // Room Database (Dành cho Offline)
-    val room_version = "2.6.1"
-    implementation("androidx.room:room-runtime:$room_version")
-    implementation("androidx.room:room-ktx:$room_version")
-    kapt("androidx.room:room-compiler:$room_version")
-
-    // Glide (Load ảnh podcast)
-    implementation("github.com.bumptech.glide:glide:4.16.0")
+    // Room & Glide
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.24")
 }
