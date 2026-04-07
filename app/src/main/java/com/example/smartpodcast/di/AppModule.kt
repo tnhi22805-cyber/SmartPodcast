@@ -7,13 +7,12 @@ import com.example.smartpodcast.data.local.AppDatabase
 import com.example.smartpodcast.data.local.EpisodeDao
 import com.example.smartpodcast.data.remote.PodcastApi
 import com.example.smartpodcast.data.repository.PodcastRepository
-import com.tickaroo.tikxml.TikXml
-import com.tickaroo.tikxml.retrofit.TikXmlConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import javax.inject.Singleton
 
@@ -30,28 +29,33 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "smart_podcast_db"
-        ).fallbackToDestructiveMigration().build()
+        return Room.databaseBuilder(context, AppDatabase::class.java, "smart_db")
+            .fallbackToDestructiveMigration().build()
     }
 
     @Provides
-    fun provideEpisodeDao(db: AppDatabase): EpisodeDao {
-        return db.episodeDao()
+    fun provideEpisodeDao(db: AppDatabase): EpisodeDao = db.episodeDao()
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    // Giả danh trình duyệt để máy chủ không chặn
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                    .build()
+                chain.proceed(request)
+            }
+            .build()
     }
 
     @Provides
     @Singleton
-    fun providePodcastApi(): PodcastApi {
-        val tikXml = TikXml.Builder()
-            .exceptionOnUnreadXml(false)
-            .build()
-
+    fun providePodcastApi(okHttpClient: OkHttpClient): PodcastApi {
         return Retrofit.Builder()
-            .baseUrl("https://vnexpress.net/")
-            .addConverterFactory(TikXmlConverterFactory.create(tikXml))
+            .baseUrl("https://google.com/") 
+            .client(okHttpClient) // Sử dụng client đã có User-Agent
             .build()
             .create(PodcastApi::class.java)
     }
