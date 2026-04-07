@@ -1,31 +1,48 @@
 package com.example.smartpodcast.service
 
-import androidx.media3.session.MediaSessionService
-import androidx.media3.session.MediaSession
+import android.content.Intent
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSessionService
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+/**
+ * Service to handle background playback and MediaSession.
+ * Supports: Lock screen controls, Bluetooth, and Audio Focus.
+ */
 @AndroidEntryPoint
 class PodcastService : MediaSessionService() {
+
+    @Inject lateinit var player: ExoPlayer
     private var mediaSession: MediaSession? = null
 
     override fun onCreate() {
         super.onCreate()
-        val audioAttributes = androidx.media3.common.AudioAttributes.Builder()
-            .setContentType(androidx.media3.common.C.AUDIO_CONTENT_TYPE_MUSIC)
-            .setUsage(androidx.media3.common.C.USAGE_MEDIA)
+        
+        // 1. Configure Audio Attributes for Audio Focus (handles calls)
+        val audioAttributes = AudioAttributes.Builder()
+            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+            .setUsage(C.USAGE_MEDIA)
             .build()
+        
+        player.setAudioAttributes(audioAttributes, true)
+        player.setHandleAudioBecomingNoisy(true) // Pauses when headphones are unplugged
 
-        val player = ExoPlayer.Builder(this)
-            .setAudioAttributes(audioAttributes, true) // Tự dừng khi có cuộc gọi
-            .setHandleAudioBecomingNoisy(true) // Tự dừng khi rút tai nghe
-            .build()
-
+        // 2. Build MediaSession for Lock Screen and Notification
         mediaSession = MediaSession.Builder(this, player).build()
     }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? =
-        mediaSession
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        val player = mediaSession?.player
+        if (player != null && !player.playWhenReady) {
+            stopSelf()
+        }
+    }
 
     override fun onDestroy() {
         mediaSession?.run {
