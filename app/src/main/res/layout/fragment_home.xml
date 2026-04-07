@@ -5,23 +5,38 @@
     android:layout_height="match_parent"
     android:background="#F8F9FA">
 
+    <!-- Header UI -->
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/tvHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:text="Khám phá Podcast"
+        android:text="Podcast Explorer"
+        android:textColor="#212529"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- RecyclerView for Podcast List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvEpisodes"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/tvHeader" />
+
+    <!-- Loading Indicator -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

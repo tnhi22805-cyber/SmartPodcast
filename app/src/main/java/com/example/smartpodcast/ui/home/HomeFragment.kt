@@ -1,7 +1,10 @@
 package com.example.smartpodcast.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -13,50 +16,75 @@ import com.example.smartpodcast.ui.player.PlayerFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-// Modern UI Home screen
+
+/**
+ * Main Home screen displaying the Podcast list automatically.
+ * Implements modern UI with loading states and error handling.
+ */
 @AndroidEntryPoint
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val viewModel: HomeViewModel by viewModels()
     private lateinit var episodeAdapter: EpisodeAdapter
+    private lateinit var progressBar: ProgressBar
+    private lateinit var rvEpisodes: RecyclerView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val rvEpisodes = view.findViewById<RecyclerView>(R.id.rvEpisodes)
+        // Find UI components
+        rvEpisodes = view.findViewById(R.id.rvEpisodes)
+        progressBar = view.findViewById(R.id.progressBar)
 
-        // 1. Khởi tạo Adapter
+        // 1. Initialize Adapter with a click listener to navigate to Player
         episodeAdapter = EpisodeAdapter { episode ->
+            navigateToPlayer(episode.audioUrl, episode.title, episode.imageUrl)
+        }
 
-val playerFragment = PlayerFragment().apply {
-    arguments = Bundle().apply {
-        putString("audioUrl", episode.audioUrl)
-        putString("title", episode.title)
-        putString("imageUrl", episode.imageUrl) // Truyền thêm ảnh
+        // 2. Setup RecyclerView
+        rvEpisodes.layoutManager = LinearLayoutManager(requireContext())
+        rvEpisodes.adapter = episodeAdapter
+
+        // 3. Collect UI States (Loading, Success, Error) from ViewModel
+        observeUiStates()
     }
-}
-// Chuyển màn hình
-parentFragmentManager.beginTransaction()
-    .replace(R.id.fragment_container, playerFragment)
-    .addToBackStack(null)
-    .commit()
 
-            android.util.Log.d("DEBUG_CLICK", "Bạn vừa nhấn vào: ${episode.title}")
-}
+    private fun observeUiStates() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.uiState.collectLatest { state ->
+                when (state) {
+                    is PodcastUiState.Loading -> {
+                        progressBar.visibility = View.VISIBLE
+                        rvEpisodes.visibility = View.GONE
+                        Log.d("UI_STATE", "Data is loading...")
+                    }
+                    is PodcastUiState.Success -> {
+                        progressBar.visibility = View.GONE
+                        rvEpisodes.visibility = View.VISIBLE
+                        episodeAdapter.updateData(state.episodes)
+                        Log.d("UI_STATE", "Data loaded successfully: ${state.episodes.size} items")
+                    }
+                    is PodcastUiState.Error -> {
+                        progressBar.visibility = View.GONE
+                        Toast.makeText(context, "Error: ${state.message}", Toast.LENGTH_LONG).show()
+                        Log.e("UI_STATE", "Error loading data: ${state.message}")
+                    }
+                }
+            }
+        }
+    }
 
-// 2. Thiết lập RecyclerView
-rvEpisodes.layoutManager = LinearLayoutManager(requireContext())
-rvEpisodes.adapter = episodeAdapter
-
-// 3. Lắng nghe dữ liệu (Chỉ cần 1 khối duy nhất như thế này)
-viewLifecycleOwner.lifecycleScope.launch {
-viewModel.episodes.collectLatest { list ->
-    // Thêm Log ở đây để kiểm tra dữ liệu trong Logcat
-    android.util.Log.d("DEBUG_DATA", "Danh sách podcast có: ${list.size} tập")
-
-    // Cập nhật lên màn hình
-    episodeAdapter.updateData(list)
-}
-}
-}
+    private fun navigateToPlayer(audioUrl: String, title: String, imageUrl: String) {
+        val playerFragment = PlayerFragment().apply {
+            arguments = Bundle().apply {
+                putString("audioUrl", audioUrl)
+                putString("title", title)
+                putString("imageUrl", imageUrl)
+            }
+        }
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, playerFragment)
+            .addToBackStack(null)
+            .commit()
+    }
 }
