@@ -4,56 +4,56 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.SeekBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.smartpodcast.R
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
-// Advanced Audio Player
+import kotlinx.coroutines.launch
+
 @AndroidEntryPoint
 class PlayerFragment : Fragment(R.layout.fragment_player) {
 
-    @Inject lateinit var player: ExoPlayer // Lấy cái máy phát nhạc mà Nhi đã setup
     private val viewModel: PlayerViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val url = arguments?.getString("audioUrl") ?: ""
-        val title = arguments?.getString("title") ?: "Unknown"
+        // Ánh xạ đúng ID từ file fragment_player.xml của bạn
         val btnPlay = view.findViewById<ImageButton>(R.id.btnPlayPause)
-        val seekBar = view.findViewById<SeekBar>(R.id.seekBar)
-        val imageUrl = "https://picsum.photos/seed/${title.hashCode()}/300"
+        val tvTitle = view.findViewById<TextView>(R.id.tvPlayerTitle)
+        val imgLarge = view.findViewById<ImageView>(R.id.imgLargePodcast)
 
-        view.findViewById<TextView>(R.id.tvPlayerTitle).text = title
+        val url = arguments?.getString("audioUrl") ?: ""
+        val title = arguments?.getString("title") ?: "Đang tải..."
+        val imageUrl = arguments?.getString("imageUrl") ?: ""
 
-        // Load ảnh bằng Glide
-        val imgView = view.findViewById<ImageView>(R.id.imgLargePodcast)
-        com.bumptech.glide.Glide.with(this).load(imageUrl).into(imgView)
+        tvTitle.text = title
+        Glide.with(this).load(imageUrl).placeholder(android.R.drawable.ic_menu_report_image).into(imgLarge)
 
-        // Phát nhạc ngay lập tức
-        viewModel.playEpisode(url)
+        // 1. Tự động phát ngay khi vào màn hình
+        if (url.isNotEmpty()) {
+            viewModel.playEpisode(url)
+        }
 
-        view.findViewById<ImageButton>(R.id.btnPlayPause).setOnClickListener {
+        // 2. Xử lý sự kiện bấm nút (Thêm Toast để kiểm tra)
+        btnPlay.setOnClickListener {
+            Toast.makeText(context, "Bạn vừa bấm nút Play/Pause", Toast.LENGTH_SHORT).show()
             viewModel.togglePlayPause()
         }
-// Cập nhật trạng thái nút bấm
-        player.addListener(object : androidx.media3.common.Player.Listener {
-            override fun onIsPlayingChanged(isPlaying: Boolean) {
-                btnPlay.setImageResource(if (isPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play)
-            }
-        })
 
-// Tua nhạc
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(s: SeekBar?, p: Int, fromUser: Boolean) {
-                if (fromUser) player.seekTo(p.toLong())
+        // 3. Quan sát trạng thái nhạc để đổi ICON nút bấm (Tam giác <-> 2 gạch)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.isPlaying.collect { isPlaying ->
+                if (isPlaying) {
+                    btnPlay.setImageResource(android.R.drawable.ic_media_pause)
+                } else {
+                    btnPlay.setImageResource(android.R.drawable.ic_media_play)
+                }
             }
-            override fun onStartTrackingTouch(s: SeekBar?) {}
-            override fun onStopTrackingTouch(s: SeekBar?) {}
-        })
+        }
     }
 }
