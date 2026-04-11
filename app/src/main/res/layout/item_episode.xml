@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Ảnh bìa vuông -->
+        <!-- Ảnh bìa vuông (đều nhau trên Grid) -->
         <ImageView
             android:id="@+id/imgPodcast"
             android:layout_width="match_parent"
@@ -25,12 +25,11 @@
             android:scaleType="centerCrop"
             android:src="@android:drawable/ic_menu_gallery" />
 
-        <!-- Phần khoảng trắng bên dưới chứa thông tin -->
-        <LinearLayout
+        <!-- Phần thông tin có kèm Nút Download -->
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/infoLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:padding="12dp"
             app:layout_constraintTop_toBottomOf="@id/imgPodcast"
             app:layout_constraintStart_toStartOf="parent"
@@ -39,43 +38,56 @@
 
             <TextView
                 android:id="@+id/tvTitle"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="2"
                 android:text="Tên tập Podcast"
                 android:textColor="#333333"
                 android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnDownload" />
 
-            <!-- Dòng cuối: Thông tin ngày và Nút Download -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tvPubDate"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp">
+                android:layout_marginTop="4dp"
+                android:text="20/10/2024"
+                android:textColor="#888888"
+                android:textSize="12sp"
+                app:layout_constraintTop_toBottomOf="@id/tvTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnDownload" />
 
-                <TextView
-                    android:id="@+id/tvPubDate"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="20/10/2024"
-                    android:textColor="#888888"
-                    android:textSize="12sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/btnDownload"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent" />
+            <TextView
+                android:id="@+id/tvDescription"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:text="Mô tả ngắn gọn về nội dung..."
+                android:textColor="#666666"
+                android:textSize="12sp"
+                app:layout_constraintTop_toBottomOf="@id/tvPubDate"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnDownload" />
 
-                <ImageView
-                    android:id="@+id/btnDownload"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@android:drawable/stat_sys_download"
-                    app:tint="#6441A5"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </LinearLayout>
+            <!-- Nút bấm tải về ở góc phải thẻ Episode -->
+            <ImageView
+                android:id="@+id/btnDownload"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:src="@android:drawable/stat_sys_download"
+                app:tint="#6441A5"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

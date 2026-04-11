@@ -11,9 +11,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+enum class FilterType { ALL, HISTORY, FAVORITE, DOWNLOAD }
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -24,100 +26,69 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<PodcastUiState>(PodcastUiState.Loading)
     val uiState: StateFlow<PodcastUiState> = _uiState.asStateFlow()
 
-    private val _isShowingDownloadsOnly = MutableStateFlow(false)
-    val isShowingDownloadsOnly: StateFlow<Boolean> = _isShowingDownloadsOnly.asStateFlow()
+    private val _currentFilter = MutableStateFlow(FilterType.ALL)
+    val currentFilter: StateFlow<FilterType> = _currentFilter.asStateFlow()
 
-    private var baseEpisodes: List<com.example.smartpodcast.data.local.EpisodeEntity> = emptyList()
-    private var dbEpisodesMap: Map<String, com.example.smartpodcast.data.local.EpisodeEntity> = emptyMap()
-    private var currentSearchQuery: String = ""
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    // Đổi sang link Podcast chuẩn Apple/iTunes (NPR Planet Money)
+    // Link này đảm bảo có Audio chuẩn và Hình ảnh đẹp
     private val APPLE_RSS_URL = "https://feeds.npr.org/510289/podcast.xml"
 
     init {
-        viewModelScope.launch {
-            repository.getEpisodes().collect { localEpisodes ->
-                dbEpisodesMap = localEpisodes.associateBy { it.id }
-                if (baseEpisodes.isEmpty() && localEpisodes.isNotEmpty()) {
-                    baseEpisodes = localEpisodes
+        viewModelScope.launch(Dispatchers.IO) {
+            combine(repository.getEpisodes(), _currentFilter, _searchQuery) { episodes, filter, query ->
+                var filtered = when (filter) {
+                    FilterType.ALL -> episodes
+                    FilterType.HISTORY -> episodes.filter { it.lastListenedAt > 0L }.sortedByDescending { it.lastListenedAt }
+                    FilterType.FAVORITE -> episodes.filter { it.isFavorite }
+                    FilterType.DOWNLOAD -> episodes.filter { it.isDownloaded }
                 }
-                applyFilters() 
+                
+                if (query.isNotBlank()) {
+                    filtered = filtered.filter { it.title.contains(query, ignoreCase = true) }
+                }
+                
+                filtered
+            }.collect { filteredList ->
+                // Chỉ hiển thị rỗng nếu Filter != ALL, còn ALL mà rỗng thì chờ API
+                if (filteredList.isNotEmpty() || _currentFilter.value != FilterType.ALL) {
+                    _uiState.value = PodcastUiState.Success(filteredList)
+                }
             }
         }
         fetchPodcasts(APPLE_RSS_URL)
+    }
+
+    fun setFilter(filter: FilterType) {
+        _currentFilter.value = filter
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
     fun fetchPodcasts(url: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value = PodcastUiState.Loading
             try {
+                Log.d("DEBUG_RSS", "Fetching Apple Standard RSS: $url")
                 val response = api.getRawRss(url)
                 val episodes = RssParser().parse(response.byteStream())
 
                 if (episodes.isNotEmpty()) {
-                    baseEpisodes = episodes 
                     repository.insertEpisodes(episodes)
+                    repository.forceSyncCloudDown()
+                    _uiState.value = PodcastUiState.Success(episodes)
+                    Log.d("DEBUG_RSS", "Successfully loaded ${episodes.size} episodes")
                 } else {
                     _uiState.value = PodcastUiState.Error("RSS content is valid but no episodes found.")
                 }
             } catch (e: Exception) {
-                Log.e("DEBUG_RSS", "Network Error: ${e.message}, falling back to local cache.")
-                if (baseEpisodes.isEmpty()) {
-                    _uiState.value = PodcastUiState.Error("Mất mạng và chưa có dữ liệu nào trong máy.")
-                } else {
-                    applyFilters()
-                }
+                Log.e("DEBUG_RSS", "Error: ${e.message}")
+                _uiState.value = PodcastUiState.Error("Failed to connect to Apple Feed: ${e.message}")
             }
         }
-    }
-
-    fun deleteDownload(episode: com.example.smartpodcast.data.local.EpisodeEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                episode.localPath?.let { path ->
-                    val rawPath = if (path.startsWith("file://")) android.net.Uri.parse(path).path ?: path else path
-                    val file = java.io.File(rawPath)
-                    if (file.exists()) {
-                        file.delete()
-                    }
-                }
-                val updated = episode.copy(isDownloaded = false, localPath = null)
-                repository.updateEpisode(updated)
-            } catch (e: Exception) {
-                Log.e("DEBUG_DELETE", "Error deleting file: ${e.message}")
-            }
-        }
-    }
-
-    fun toggleDownloadFilter() {
-        _isShowingDownloadsOnly.value = !_isShowingDownloadsOnly.value
-        applyFilters()
-    }
-
-    fun search(query: String) {
-        currentSearchQuery = query
-        applyFilters()
-    }
-
-    private fun applyFilters() {
-        var filtered = baseEpisodes.map { base ->
-            val dbItem = dbEpisodesMap[base.id]
-            if (dbItem != null) {
-                base.copy(isDownloaded = dbItem.isDownloaded, localPath = dbItem.localPath)
-            } else base
-        }
-        
-        if (_isShowingDownloadsOnly.value) {
-            filtered = filtered.filter { it.isDownloaded }
-        }
-
-        if (currentSearchQuery.isNotBlank()) {
-            val lowerQuery = currentSearchQuery.lowercase()
-            filtered = filtered.filter {
-                it.title.lowercase().contains(lowerQuery) ||
-                it.description.lowercase().contains(lowerQuery)
-            }
-        }
-        
-        _uiState.value = PodcastUiState.Success(filtered)
     }
 }

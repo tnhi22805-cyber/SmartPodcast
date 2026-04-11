@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -68,5 +69,11 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.24")
+    implementation("androidx.palette:palette-ktx:1.0.0")
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 }

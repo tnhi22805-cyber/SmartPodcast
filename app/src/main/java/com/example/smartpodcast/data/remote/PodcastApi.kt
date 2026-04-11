@@ -4,25 +4,25 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface PodcastApi {
-<<<<<<< Updated upstream
+
     @GET("search")
     suspend fun getTrendingPodcasts(
         @Query("term") term: String = "podcast",
-        @Query("limit") limit: Int = 50, // Lấy hẳn 50 bài cho "sướng"
+        @Query("limit") limit: Int = 50,
         @Query("media") media: String = "podcast"
     ): ApplePodcastResponse
+
+    @GET
+    suspend fun getRawRss(@retrofit2.http.Url url: String): okhttp3.ResponseBody
 }
 
 data class ApplePodcastResponse(val results: List<ApplePodcastResult>)
 data class ApplePodcastResult(
     val trackName: String?,
-    val previewUrl: String?,      // Link nhạc MP3 chuẩn Apple
-    val artworkUrl100: String?,   // Link ảnh bìa cực nét
-    val collectionName: String?   // Mô tả tập nhạc
+    val previewUrl: String?,
+    val artworkUrl100: String?,
+    val collectionName: String?
 )
-=======
-    // Sửa lại: Dùng @GET không có đường dẫn khi kết hợp với @Url
-    @GET
-    suspend fun getRawRss(@Url url: String): ResponseBody
-}
->>>>>>> Stashed changes
+
+
+

@@ -13,13 +13,29 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.example.smartpodcast.data.repository.PodcastRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class PlayerViewModel @Inject constructor(val player: ExoPlayer) : ViewModel() {
+class PlayerViewModel @Inject constructor(
+    val player: ExoPlayer,
+    private val repository: PodcastRepository
+) : ViewModel() {
 
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying = _isPlaying.asStateFlow()
+
+    private val _isFavorite = MutableStateFlow(false)
+    val isFavorite = _isFavorite.asStateFlow()
+
+    private val _isDownloading = MutableStateFlow(false)
+    val isDownloading = _isDownloading.asStateFlow()
+
+    private val _isDownloadedState = MutableStateFlow(false)
+    val isDownloadedState = _isDownloadedState.asStateFlow()
+
+    private val _downloadStatusMsg = MutableStateFlow("")
+    val downloadStatusMsg = _downloadStatusMsg.asStateFlow()
 
     private val _sleepTimerText = MutableStateFlow("Sleep Timer: Off")
     val sleepTimerText = _sleepTimerText.asStateFlow()
@@ -69,57 +85,82 @@ class PlayerViewModel @Inject constructor(val player: ExoPlayer) : ViewModel() {
         }
     }
 
-    fun playEpisode(url: String, localPath: String?, title: String, description: String, imageUrl: String) {
+    fun playEpisode(url: String, title: String, description: String, imageUrl: String) {
         if (url.isEmpty()) return
 
-        val playUri = if (!localPath.isNullOrEmpty()) {
-            if (localPath.startsWith("content://")) {
-                localPath // URI từ MediaStore/ContentResolver (API 33+)
+        viewModelScope.launch {
+            // Lấy trực tiếp thông tin từ Database (để xem đã tải về chưa)
+            val episode = repository.getEpisodeById(url)
+            
+            // Xóa rào cản: LUÔN cập nhật lại trạng thái Tim và Tải kể cả khi đang phát dở
+            _isFavorite.value = episode?.isFavorite ?: false
+            _isDownloadedState.value = episode?.isDownloaded ?: false
+
+            val uriToPlay = if (episode != null && episode.isDownloaded && episode.localPath != null) {
+                // Đã tải về nằm trên ổ cứng điện thoại
+                episode.localPath
             } else {
-                // Xử lý cả dạng cũ lỗi "/storage/..." và chuẩn "file:///storage/..."
-                val rawPath = if (localPath.startsWith("file://")) Uri.parse(localPath).path ?: localPath else localPath
-                val file = java.io.File(rawPath)
-                if (file.exists()) Uri.fromFile(file).toString() else url
+                // Chưa tải, nghe qua mạng Internet
+                url
             }
-        } else {
-            url
-        }
 
-        // Check if already playing this URL
-        if (player.currentMediaItem?.localConfiguration?.uri.toString() == playUri) {
-            // Nếu ExoPlayer trước đó bị văng lỗi (do rớt mạng), ta phải reset prepare() lại
-            if (player.playerError != null || player.playbackState == Player.STATE_IDLE) {
-                player.prepare()
+            // Check if already playing this URL
+            if (player.currentMediaItem?.localConfiguration?.uri.toString() == uriToPlay || player.currentMediaItem?.mediaId == url) {
+                if (!player.isPlaying) player.play()
+                return@launch
             }
-            if (!player.isPlaying) player.play()
-            return
+
+            // 1. Create Metadata (Crucial for Lock Screen/Notification)
+            val metadata = MediaMetadata.Builder()
+                .setTitle(title)
+                .setArtist(description)
+                .setArtworkUri(Uri.parse(imageUrl))
+                .setIsPlayable(true)
+                .build()
+
+            // 2. Create MediaItem with Metadata
+            val mediaItem = MediaItem.Builder()
+                .setMediaId(url)
+                .setUri(uriToPlay)
+                .setMediaMetadata(metadata)
+                .build()
+
+            player.stop()
+            player.setMediaItem(mediaItem)
+            player.prepare()
+            player.play()
+
+            // Ghi lại Lịch sử nghe vào Database
+            repository.markListenHistory(url)
         }
+    }
 
-        // 1. Create Metadata (Crucial for Lock Screen/Notification)
-        val metadata = MediaMetadata.Builder()
-            .setTitle(title)
-            .setArtist(description)
-            .setArtworkUri(Uri.parse(imageUrl))
-            .setIsPlayable(true)
-            .build()
+    fun toggleFavorite(id: String) {
+        viewModelScope.launch {
+            val newState = repository.toggleFavorite(id)
+            _isFavorite.value = newState
+        }
+    }
 
-        // 2. Create MediaItem with Metadata
-        val mediaItem = MediaItem.Builder()
-            .setMediaId(url) // Keep original URL as ID for consistency
-            .setUri(playUri) // Use localPath if available
-            .setMediaMetadata(metadata)
-            .build()
-
-        player.stop()
-        player.setMediaItem(mediaItem)
-        player.prepare()
-        player.play()
+    fun downloadPodcast(id: String, title: String) {
+        viewModelScope.launch {
+            _isDownloading.value = true
+            val success = repository.downloadPodcast(id, id, title)
+            
+            _downloadStatusMsg.value = "" // Xóa trạng thái cũ
+            delay(10) // Đợi Flow reset
+            
+            if (success) {
+                _isDownloadedState.value = true
+                _downloadStatusMsg.value = "Tải thành công! Đã lưu $title"
+            } else {
+                _downloadStatusMsg.value = "Lỗi tải $title. Kiểm tra mạng hoặc bật chế độ máy bay!"
+            }
+            _isDownloading.value = false
+        }
     }
 
     fun togglePlayPause() {
-        if (player.playerError != null || player.playbackState == Player.STATE_IDLE) {
-            player.prepare()
-        }
         if (player.isPlaying) player.pause() else player.play()
     }
 

@@ -8,71 +8,99 @@
     <!-- Header UI -->
     <TextView
         android:id="@+id/tvHeader"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:text="Podcast Explorer"
+        android:text="Podcast"
         android:textColor="#212529"
         android:textSize="24sp"
         android:textStyle="bold"
+        android:maxLines="2"
+        app:layout_constraintEnd_toStartOf="@+id/layoutActionButtons"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="@+id/ivProfile" />
+        app:layout_constraintBottom_toBottomOf="@+id/layoutActionButtons" />
 
-    <ImageView
-        android:id="@+id/ivDownloads"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
+    <LinearLayout
+        android:id="@+id/layoutActionButtons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:padding="8dp"
-        android:src="@android:drawable/stat_sys_download_done"
-        app:tint="#6441A5"
-        app:layout_constraintEnd_toStartOf="@+id/ivProfile"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/ivProfile"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:padding="8dp"
-        android:src="@android:drawable/ic_menu_myplaces"
-        app:tint="#6441A5"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <!-- Search Bar -->
+        <ImageView
+            android:id="@+id/btnFilterAll"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_menu_today"
+            app:tint="#6441A5" />
+
+        <ImageView
+            android:id="@+id/btnFilterHistory"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_menu_recent_history"
+            app:tint="#888888" />
+
+        <ImageView
+            android:id="@+id/btnFilterFavorite"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@android:drawable/btn_star"
+            app:tint="#888888" />
+
+        <ImageView
+            android:id="@+id/btnFilterDownload"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_menu_save"
+            app:tint="#888888" />
+
+        <ImageView
+            android:id="@+id/ivProfile"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_menu_myplaces"
+            app:tint="#D32F2F" />
+    </LinearLayout>
+
     <EditText
         android:id="@+id/etSearch"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="12dp"
-        android:background="@drawable/bg_search_bar"
+        android:layout_marginTop="16dp"
+        android:background="#FFFFFF"
         android:drawableStart="@android:drawable/ic_menu_search"
-        android:drawablePadding="8dp"
+        android:drawablePadding="12dp"
+        android:elevation="4dp"
         android:hint="Tìm kiếm Podcast..."
-        android:paddingHorizontal="16dp"
-        android:textColor="#333333"
-        android:textColorHint="#888888"
-        android:textSize="14sp"
-        android:maxLines="1"
-        android:inputType="text"
-        android:imeOptions="actionSearch"
-        app:layout_constraintTop_toBottomOf="@+id/tvHeader"
+        android:padding="12dp"
+        android:textColor="#333"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/tvHeader" />
 
     <!-- RecyclerView for Podcast List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvEpisodes"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/layoutMiniPlayer"
         app:layout_constraintTop_toBottomOf="@+id/etSearch" />

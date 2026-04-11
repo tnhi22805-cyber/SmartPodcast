@@ -37,7 +37,6 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         val tvTotalTime = view.findViewById<TextView>(R.id.tvTotalTime)
 
         val url = arguments?.getString("audioUrl") ?: ""
-        val localPath = arguments?.getString("localPath")
         val title = arguments?.getString("title") ?: "Loading..."
         val description = arguments?.getString("description") ?: ""
         val imageUrl = arguments?.getString("imageUrl") ?: ""
@@ -50,7 +49,7 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
 
         // 1. Auto play with Metadata if navigated from Home
         if (url.isNotEmpty()) {
-            viewModel.playEpisode(url, localPath, title, description, imageUrl)
+            viewModel.playEpisode(url, title, description, imageUrl)
         }
 
         // 1.5 Lấy thông tin bài hát đang phát thực tế để cập nhật màn hình
@@ -147,6 +146,66 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.sleepTimerText.collectLatest { status ->
                 tvTimerStatus.text = status
+            }
+        }
+
+        // 6. Action Buttons
+        val btnFavoritePlayer = view.findViewById<ImageButton>(R.id.btnFavoritePlayer)
+        val btnDownloadPlayer = view.findViewById<ImageButton>(R.id.btnDownloadPlayer)
+
+        btnFavoritePlayer.setOnClickListener {
+            val mediaId = viewModel.currentMediaItem.value?.mediaId ?: url
+            viewModel.toggleFavorite(mediaId)
+        }
+
+        btnDownloadPlayer.setOnClickListener {
+            val mediaId = viewModel.currentMediaItem.value?.mediaId ?: url
+            val currentTitle = viewModel.currentMediaItem.value?.mediaMetadata?.title?.toString() ?: title
+            android.widget.Toast.makeText(requireContext(), "Đang bắt đầu tải...", android.widget.Toast.LENGTH_SHORT).show()
+            viewModel.downloadPodcast(mediaId, currentTitle)
+        }
+
+        // --- CẬP NHẬT TRẠNG THÁI YÊU THÍCH ---
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.isFavorite.collectLatest { isFav ->
+                if (isFav) {
+                    btnFavoritePlayer.setImageResource(android.R.drawable.btn_star_big_on)
+                    btnFavoritePlayer.setColorFilter(android.graphics.Color.YELLOW)
+                } else {
+                    btnFavoritePlayer.setImageResource(android.R.drawable.btn_star)
+                    btnFavoritePlayer.clearColorFilter()
+                }
+            }
+        }
+
+        // --- CẬP NHẬT TRẠNG THÁI TẢI XUỐNG ---
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.isDownloadedState.collectLatest { d ->
+                if (d) {
+                    // Đã tải thành công -> Hiện màu xanh
+                    btnDownloadPlayer.setColorFilter(android.graphics.Color.parseColor("#4CAF50"))
+                } else {
+                    // Chưa tải
+                    btnDownloadPlayer.clearColorFilter()
+                }
+            }
+        }
+
+        // --- BẮT THÔNG BÁO TẢI XONG BẰNG TOAST ---
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.downloadStatusMsg.collectLatest { msg ->
+                if (msg.isNotEmpty()) {
+                    android.widget.Toast.makeText(requireContext(), msg, android.widget.Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.isDownloading.collectLatest { isDownloading ->
+                if (isDownloading) {
+                    // Tùy chọn: Thay đổi icon khi đang tải
+                    btnDownloadPlayer.setColorFilter(android.graphics.Color.GRAY)
+                }
             }
         }
     }
