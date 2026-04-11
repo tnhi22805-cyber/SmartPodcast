@@ -31,22 +31,65 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         val imgLarge = view.findViewById<ImageView>(R.id.imgLargePodcast)
         val tvTimerStatus = view.findViewById<TextView>(R.id.tvTimerStatus)
         val btnMenu = view.findViewById<ImageButton>(R.id.btnMenu)
-        
+
         val seekBar = view.findViewById<SeekBar>(R.id.seekBar)
         val tvCurrentTime = view.findViewById<TextView>(R.id.tvCurrentTime)
         val tvTotalTime = view.findViewById<TextView>(R.id.tvTotalTime)
 
-        // Load Arguments
         val url = arguments?.getString("audioUrl") ?: ""
         val title = arguments?.getString("title") ?: "Loading..."
+        val description = arguments?.getString("description") ?: ""
         val imageUrl = arguments?.getString("imageUrl") ?: ""
 
-        tvTitle.text = title
-        Glide.with(this).load(imageUrl).placeholder(android.R.drawable.ic_menu_report_image).into(imgLarge)
-
-        // 1. Auto play
+        // 1. Auto play with Metadata if navigated from Home
         if (url.isNotEmpty()) {
-            viewModel.playEpisode(url)
+            viewModel.playEpisode(url, title, description, imageUrl)
+        }
+
+        // 1.5 Lấy thông tin bài hát đang phát thực tế để cập nhật màn hình
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.currentMediaItem.collectLatest { item ->
+                item?.let {
+                    val currentTitle = it.mediaMetadata.title?.toString() ?: title
+                    val currentImgUrl = it.mediaMetadata.artworkUri?.toString() ?: imageUrl
+
+                    tvTitle.text = currentTitle
+
+                    // Tạo Nền và màu sắc động (Immersive UI) giống thông báo Lock Screen
+                    Glide.with(this@PlayerFragment)
+                        .asBitmap()
+                        .load(currentImgUrl)
+                        .placeholder(android.R.drawable.ic_menu_report_image)
+                        .into(object : com.bumptech.glide.request.target.CustomTarget<android.graphics.Bitmap>() {
+                            override fun onResourceReady(bitmap: android.graphics.Bitmap, transition: com.bumptech.glide.request.transition.Transition<in android.graphics.Bitmap>?) {
+                                imgLarge.setImageBitmap(bitmap)
+
+                                androidx.palette.graphics.Palette.from(bitmap).generate { palette ->
+                                    val dominant = palette?.getDominantColor(android.graphics.Color.DKGRAY) ?: android.graphics.Color.DKGRAY
+                                    val darkMuted = palette?.getDarkMutedColor(android.graphics.Color.BLACK) ?: android.graphics.Color.BLACK
+
+                                    val gradient = android.graphics.drawable.GradientDrawable(
+                                        android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                                        intArrayOf(dominant, darkMuted)
+                                    )
+                                    view.background = gradient
+
+                                    // Chuyển chữ và icon sang màu trắng để nổi bật trên nền
+                                    tvTitle.setTextColor(android.graphics.Color.WHITE)
+                                    tvTimerStatus.setTextColor(android.graphics.Color.LTGRAY)
+                                    tvCurrentTime.setTextColor(android.graphics.Color.LTGRAY)
+                                    tvTotalTime.setTextColor(android.graphics.Color.LTGRAY)
+
+                                    btnPlay.setColorFilter(android.graphics.Color.WHITE)
+                                    btnRewind.setColorFilter(android.graphics.Color.WHITE)
+                                    btnForward.setColorFilter(android.graphics.Color.WHITE)
+                                    btnMenu.setColorFilter(android.graphics.Color.WHITE)
+                                }
+                            }
+                            override fun onLoadCleared(placeholder: android.graphics.drawable.Drawable?) {}
+                        })
+                }
+            }
         }
 
         // 2. Playback controls

@@ -1,19 +1,56 @@
 package com.example.smartpodcast
 
+import android.Manifest
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.smartpodcast.ui.home.HomeFragment // Dòng này sẽ hết lỗi đỏ
+import androidx.core.app.ActivityCompat
+import com.example.smartpodcast.service.PodcastService
+import com.example.smartpodcast.ui.home.HomeFragment
 import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint // Bắt buộc phải có dòng này để Hilt chạy được
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if (savedInstanceState == null) {
+        // 1. Xin quyền thông báo cho Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                0
+            )
+        }
+
+        // 2. Khởi động MediaController để kết nối với PodcastService giúp hiển thị thông báo
+        val sessionToken = androidx.media3.session.SessionToken(
+            this,
+            android.content.ComponentName(this, PodcastService::class.java)
+        )
+        val controllerFuture = androidx.media3.session.MediaController.Builder(this, sessionToken).buildAsync()
+        controllerFuture.addListener({
+            // Không cần làm gì thêm, việc kết nối đã đủ để kích hoạt MediaSession
+        }, androidx.core.content.ContextCompat.getMainExecutor(this))
+
+        if (intent.getBooleanExtra("OPEN_PLAYER", false)) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, com.example.smartpodcast.ui.player.PlayerFragment())
+                .commit()
+        } else if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, HomeFragment())
+                .commit()
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (intent?.getBooleanExtra("OPEN_PLAYER", false) == true) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, com.example.smartpodcast.ui.player.PlayerFragment())
                 .commit()
         }
     }
