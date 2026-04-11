@@ -16,6 +16,8 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import javax.inject.Singleton
 
+import com.example.smartpodcast.data.repository.FirebaseSyncRepository
+
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
@@ -35,7 +37,8 @@ object AppModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(context, AppDatabase::class.java, "smart_db")
-            .fallbackToDestructiveMigration().build()
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides
@@ -67,8 +70,19 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRepository(api: PodcastApi, dao: EpisodeDao): PodcastRepository {
-        return PodcastRepository(api, dao)
+    fun provideFirebaseSyncRepository(): FirebaseSyncRepository {
+        return FirebaseSyncRepository()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRepository(
+        api: PodcastApi,
+        dao: EpisodeDao,
+        @ApplicationContext context: Context,
+        syncRepo: FirebaseSyncRepository
+    ): PodcastRepository {
+        return PodcastRepository(api, dao, context, syncRepo)
     }
 
     @Provides
