@@ -36,17 +36,26 @@ class MainActivity : AppCompatActivity() {
         }, androidx.core.content.ContextCompat.getMainExecutor(this))
 
         if (savedInstanceState == null) {
-            // Luôn đặt HomeFragment làm nền
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, HomeFragment())
-                .commit()
-
-            // Nếu khởi động thẳng từ thông báo, đẩy PlayerFragment lên trên cùng
-            if (intent.getBooleanExtra("OPEN_PLAYER", false)) {
+            val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+            
+            if (currentUser == null) {
+                // Bắt buộc vòng qua Màn hình Đăng nhập nếu chưa có tài khoản
                 supportFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, com.example.smartpodcast.ui.player.PlayerFragment())
-                    .addToBackStack(null) // Cho phép bấm nút Back để quay về Trang chủ
+                    .replace(R.id.fragment_container, com.example.smartpodcast.ui.auth.AuthFragment())
                     .commit()
+            } else {
+                // Đã đăng nhập: Luôn đặt HomeFragment làm nền
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, HomeFragment())
+                    .commit()
+
+                // Nếu khởi động thẳng từ thông báo, đẩy PlayerFragment lên trên cùng
+                if (intent.getBooleanExtra("OPEN_PLAYER", false)) {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, com.example.smartpodcast.ui.player.PlayerFragment())
+                        .addToBackStack(null) // Cho phép bấm nút Back để quay về Trang chủ
+                        .commit()
+                }
             }
         }
     }
