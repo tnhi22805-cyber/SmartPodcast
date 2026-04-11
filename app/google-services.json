@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "278041290799",
+    "project_id": "smart-podcast",
+    "storage_bucket": "smart-podcast.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:278041290799:android:11be344489d26dd0e7feda",
+        "android_client_info": {
+          "package_name": "com.example.smartpodcast"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDd4m9gE_1wMCWCCrlxxe-lRb5nbYeZBQk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

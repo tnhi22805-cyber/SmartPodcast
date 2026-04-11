@@ -7,6 +7,7 @@ import com.example.smartpodcast.data.local.AppDatabase
 import com.example.smartpodcast.data.local.EpisodeDao
 import com.example.smartpodcast.data.remote.PodcastApi
 import com.example.smartpodcast.data.repository.PodcastRepository
+import com.example.smartpodcast.data.repository.FirebaseSyncRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,15 +23,21 @@ object AppModule {
 
     @Provides
     @Singleton
+    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     fun provideExoPlayer(@ApplicationContext context: Context): ExoPlayer {
-        return ExoPlayer.Builder(context).build()
+        return ExoPlayer.Builder(context)
+            .setWakeMode(androidx.media3.common.C.WAKE_MODE_NETWORK)
+            .setSeekForwardIncrementMs(15000)
+            .setSeekBackIncrementMs(15000)
+            .build()
     }
 
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(context, AppDatabase::class.java, "smart_db")
-            .fallbackToDestructiveMigration().build()
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides
@@ -52,24 +59,41 @@ object AppModule {
 
     @Provides
     @Singleton
-<<<<<<< Updated upstream
-    fun providePodcastApi(): PodcastApi {
-        return Retrofit.Builder()
-            .baseUrl("https://itunes.apple.com/")
-            .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
-=======
     fun providePodcastApi(okHttpClient: OkHttpClient): PodcastApi {
         return Retrofit.Builder()
-            .baseUrl("https://google.com/") 
-            .client(okHttpClient) // Sử dụng client đã có User-Agent
->>>>>>> Stashed changes
+            .baseUrl("https://itunes.apple.com/")
+            .client(okHttpClient) // Sử dụng client để pass User Agent
+            .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
             .build()
             .create(PodcastApi::class.java)
     }
 
     @Provides
     @Singleton
-    fun provideRepository(api: PodcastApi, dao: EpisodeDao): PodcastRepository {
-        return PodcastRepository(api, dao)
+    fun provideFirebaseSyncRepository(): FirebaseSyncRepository {
+        return FirebaseSyncRepository()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRepository(
+        api: PodcastApi,
+        dao: EpisodeDao,
+        @ApplicationContext context: Context,
+        syncRepo: FirebaseSyncRepository
+    ): PodcastRepository {
+        return PodcastRepository(api, dao, context, syncRepo)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): com.google.firebase.auth.FirebaseAuth {
+        return com.google.firebase.auth.FirebaseAuth.getInstance()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFirestore(): com.google.firebase.firestore.FirebaseFirestore {
+        return com.google.firebase.firestore.FirebaseFirestore.getInstance()
     }
 }
