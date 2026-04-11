@@ -36,6 +36,14 @@ class PlayerViewModel @Inject constructor(val player: ExoPlayer) : ViewModel() {
     private var countDownTimer: CountDownTimer? = null
 
     init {
+        // Khởi tạo ngay trạng thái hiện tại (Đặc biệt quan trọng khi mở lại app từ thông báo)
+        _isPlaying.value = player.isPlaying
+        _currentMediaItem.value = player.currentMediaItem
+        if (player.playbackState == Player.STATE_READY) {
+            _duration.value = player.duration
+            _currentPosition.value = player.currentPosition
+        }
+
         player.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(playing: Boolean) {
                 _isPlaying.value = playing
