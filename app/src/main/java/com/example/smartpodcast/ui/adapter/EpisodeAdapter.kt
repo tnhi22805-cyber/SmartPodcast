@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.text.HtmlCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.smartpodcast.R
@@ -43,7 +44,7 @@ class EpisodeAdapter(
         fun bind(episode: EpisodeEntity) {
             title.text = episode.title
             date.text = episode.pubDate
-            desc.text = episode.description
+            desc.text = HtmlCompat.fromHtml(episode.description, HtmlCompat.FROM_HTML_MODE_LEGACY)
             Glide.with(itemView.context).load(episode.imageUrl).into(image)
         }
     }
