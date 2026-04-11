@@ -4,6 +4,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface PodcastApi {
+<<<<<<< Updated upstream
     @GET("search")
     suspend fun getTrendingPodcasts(
         @Query("term") term: String = "podcast",
@@ -19,3 +20,9 @@ data class ApplePodcastResult(
     val artworkUrl100: String?,   // Link ảnh bìa cực nét
     val collectionName: String?   // Mô tả tập nhạc
 )
+=======
+    // Sửa lại: Dùng @GET không có đường dẫn khi kết hợp với @Url
+    @GET
+    suspend fun getRawRss(@Url url: String): ResponseBody
+}
+>>>>>>> Stashed changes
