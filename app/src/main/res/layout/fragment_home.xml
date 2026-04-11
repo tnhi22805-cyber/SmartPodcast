@@ -87,7 +87,7 @@
         android:drawableStart="@android:drawable/ic_menu_search"
         android:drawablePadding="12dp"
         android:elevation="4dp"
-        android:hint="Tìm kiếm Podcast yêu thích..."
+        android:hint="Tìm kiếm Podcast..."
         android:padding="12dp"
         android:textColor="#333"
         android:textSize="16sp"

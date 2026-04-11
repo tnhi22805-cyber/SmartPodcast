@@ -7,6 +7,7 @@ import com.example.smartpodcast.data.local.AppDatabase
 import com.example.smartpodcast.data.local.EpisodeDao
 import com.example.smartpodcast.data.remote.PodcastApi
 import com.example.smartpodcast.data.repository.PodcastRepository
+import com.example.smartpodcast.data.repository.FirebaseSyncRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,7 +36,8 @@ object AppModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(context, AppDatabase::class.java, "smart_db")
-            .fallbackToDestructiveMigration().build()
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides
@@ -59,16 +61,28 @@ object AppModule {
     @Singleton
     fun providePodcastApi(okHttpClient: OkHttpClient): PodcastApi {
         return Retrofit.Builder()
-            .baseUrl("https://google.com/")
-            .client(okHttpClient) // Sử dụng client đã có User-Agent
+            .baseUrl("https://itunes.apple.com/")
+            .client(okHttpClient) // Sử dụng client để pass User Agent
+            .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
             .build()
             .create(PodcastApi::class.java)
     }
 
     @Provides
     @Singleton
-    fun provideRepository(api: PodcastApi, dao: EpisodeDao): PodcastRepository {
-        return PodcastRepository(api, dao)
+    fun provideFirebaseSyncRepository(): FirebaseSyncRepository {
+        return FirebaseSyncRepository()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRepository(
+        api: PodcastApi,
+        dao: EpisodeDao,
+        @ApplicationContext context: Context,
+        syncRepo: FirebaseSyncRepository
+    ): PodcastRepository {
+        return PodcastRepository(api, dao, context, syncRepo)
     }
 
     @Provides
