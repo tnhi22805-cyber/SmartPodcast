@@ -15,6 +15,7 @@ sealed class AuthState {
     object Idle : AuthState()
     object Loading : AuthState()
     data class Success(val user: FirebaseUser) : AuthState()
+    object RegisterSuccess : AuthState()
     data class Error(val message: String) : AuthState()
 }
 
@@ -45,7 +46,8 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             val result = authRepository.register(email, pass)
             result.onSuccess { user ->
-                _authState.value = AuthState.Success(user)
+                authRepository.logout() // Đăng xuất ngay sau khi đăng ký để bắt buộc đăng nhập thủ công
+                _authState.value = AuthState.RegisterSuccess
             }.onFailure { ex ->
                 _authState.value = AuthState.Error(ex.message ?: "Lỗi Đăng Ký")
             }

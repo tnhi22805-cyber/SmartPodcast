@@ -58,6 +58,13 @@ class AuthFragment : Fragment(R.layout.fragment_auth) {
                             .replace(R.id.fragment_container, com.example.smartpodcast.ui.home.HomeFragment())
                             .commit()
                     }
+                    is AuthState.RegisterSuccess -> {
+                        progressBar.visibility = View.GONE
+                        btnLogin.isEnabled = true
+                        btnRegister.isEnabled = true
+                        etPassword.text.clear()
+                        Toast.makeText(context, "Đăng ký thành công, vui lòng đăng nhập!", Toast.LENGTH_LONG).show()
+                    }
                     is AuthState.Error -> {
                         progressBar.visibility = View.GONE
                         btnLogin.isEnabled = true

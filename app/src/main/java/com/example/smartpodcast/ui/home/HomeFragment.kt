@@ -51,6 +51,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     .setPositiveButton("Đăng xuất") { _, _ ->
                         com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
                         Toast.makeText(context, "Đã đăng xuất!", Toast.LENGTH_SHORT).show()
+                        
+                        // Xóa sách lịch sử điều hướng (backstack) và đẩy về trang đăng nhập
+                        parentFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        parentFragmentManager.beginTransaction()
+                            .replace(R.id.fragment_container, com.example.smartpodcast.ui.auth.AuthFragment())
+                            .commit()
                     }
                     .setNegativeButton("Đóng", null)
                     .show()
