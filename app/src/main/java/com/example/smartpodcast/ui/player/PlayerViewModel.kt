@@ -1,18 +1,16 @@
 package com.example.smartpodcast.ui.player
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
+<<<<<<< Updated upstream
 class PlayerViewModel @Inject constructor(
     val player: ExoPlayer
 ) : ViewModel() {
@@ -25,6 +23,9 @@ class PlayerViewModel @Inject constructor(
 
     private val _duration = MutableStateFlow(0L)
     val duration = _duration.asStateFlow()
+=======
+class PlayerViewModel @Inject constructor(val player: ExoPlayer) : ViewModel() {
+>>>>>>> Stashed changes
 
     // Bộ lắng nghe sự kiện THẬT từ máy phát
     private val playerListener = object : Player.Listener {
@@ -39,6 +40,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     init {
+<<<<<<< Updated upstream
         player.addListener(playerListener)
         startTimer()
     }
@@ -53,11 +55,30 @@ class PlayerViewModel @Inject constructor(
             player.prepare() // BƯỚC NÀY LÀM NHẠC KÊU
             player.play()
         } catch (e: Exception) { e.printStackTrace() }
+=======
+        player.addListener(object : Player.Listener {
+            override fun onIsPlayingChanged(playing: Boolean) {
+                _isPlaying.value = playing
+            }
+        })
+    }
+
+    fun playEpisode(url: String) {
+        if (url.isEmpty()) return
+        if (player.currentMediaItem?.localConfiguration?.uri.toString() == url) return
+
+        val mediaItem = MediaItem.fromUri(url)
+        player.stop()
+        player.setMediaItem(mediaItem)
+        player.prepare() // Nạp nhạc
+        player.play()    // Phát nhạc
+>>>>>>> Stashed changes
     }
 
     fun togglePlayPause() {
         if (player.isPlaying) player.pause() else player.play()
     }
+<<<<<<< Updated upstream
 
     fun seekTo(position: Long) {
         player.seekTo(position)
@@ -76,4 +97,6 @@ class PlayerViewModel @Inject constructor(
         player.removeListener(playerListener) // Dọn dẹp để không tốn pin
         super.onCleared()
     }
+=======
+>>>>>>> Stashed changes
 }
