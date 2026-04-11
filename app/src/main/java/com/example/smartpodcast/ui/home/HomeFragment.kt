@@ -41,6 +41,27 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             navigateToPlayer(episode.audioUrl, episode.title, episode.imageUrl)
         }
 
+        val ivProfile = view.findViewById<android.widget.ImageView>(R.id.ivProfile)
+        ivProfile.setOnClickListener {
+            val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+            if (user != null) {
+                androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Tài khoản")
+                    .setMessage("Đang đăng nhập: ${user.email}\nBạn có muốn đăng xuất không?")
+                    .setPositiveButton("Đăng xuất") { _, _ ->
+                        com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                        Toast.makeText(context, "Đã đăng xuất!", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton("Đóng", null)
+                    .show()
+            } else {
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, com.example.smartpodcast.ui.auth.AuthFragment())
+                    .addToBackStack(null)
+                    .commit()
+            }
+        }
+
         // 2. Setup RecyclerView
         rvEpisodes.layoutManager = LinearLayoutManager(requireContext())
         rvEpisodes.adapter = episodeAdapter
