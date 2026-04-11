@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.smartpodcast.R
@@ -76,7 +76,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         // 2. Setup RecyclerView
-        rvEpisodes.layoutManager = LinearLayoutManager(requireContext())
+        rvEpisodes.layoutManager = GridLayoutManager(requireContext(), 2)
         rvEpisodes.adapter = episodeAdapter
 
         // 3. Setup Mini Player
