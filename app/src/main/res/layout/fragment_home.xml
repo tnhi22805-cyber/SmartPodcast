@@ -32,15 +32,37 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Search Bar -->
+    <EditText
+        android:id="@+id/etSearch"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_search_bar"
+        android:drawableStart="@android:drawable/ic_menu_search"
+        android:drawablePadding="8dp"
+        android:hint="Tìm kiếm Podcast..."
+        android:paddingHorizontal="16dp"
+        android:textColor="#333333"
+        android:textColorHint="#888888"
+        android:textSize="14sp"
+        android:maxLines="1"
+        android:inputType="text"
+        android:imeOptions="actionSearch"
+        app:layout_constraintTop_toBottomOf="@+id/tvHeader"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <!-- RecyclerView for Podcast List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvEpisodes"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/layoutMiniPlayer"
-        app:layout_constraintTop_toBottomOf="@+id/tvHeader" />
+        app:layout_constraintTop_toBottomOf="@+id/etSearch" />
 
     <!-- Mini Player UI -->
     <androidx.constraintlayout.widget.ConstraintLayout

@@ -23,6 +23,8 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<PodcastUiState>(PodcastUiState.Loading)
     val uiState: StateFlow<PodcastUiState> = _uiState.asStateFlow()
 
+    private var allEpisodes: List<com.example.smartpodcast.data.local.EpisodeEntity> = emptyList()
+
     // Đổi sang link Podcast chuẩn Apple/iTunes (NPR Planet Money)
     // Link này đảm bảo có Audio chuẩn và Hình ảnh đẹp
     private val APPLE_RSS_URL = "https://feeds.npr.org/510289/podcast.xml"
@@ -41,6 +43,7 @@ class HomeViewModel @Inject constructor(
 
                 if (episodes.isNotEmpty()) {
                     repository.insertEpisodes(episodes)
+                    allEpisodes = episodes
                     _uiState.value = PodcastUiState.Success(episodes)
                     Log.d("DEBUG_RSS", "Successfully loaded ${episodes.size} episodes")
                 } else {
@@ -51,5 +54,18 @@ class HomeViewModel @Inject constructor(
                 _uiState.value = PodcastUiState.Error("Failed to connect to Apple Feed: ${e.message}")
             }
         }
+    }
+
+    fun search(query: String) {
+        if (query.isBlank()) {
+            _uiState.value = PodcastUiState.Success(allEpisodes)
+            return
+        }
+        val lowerQuery = query.lowercase()
+        val filtered = allEpisodes.filter {
+            it.title.lowercase().contains(lowerQuery) ||
+                    it.description.lowercase().contains(lowerQuery)
+        }
+        _uiState.value = PodcastUiState.Success(filtered)
     }
 }

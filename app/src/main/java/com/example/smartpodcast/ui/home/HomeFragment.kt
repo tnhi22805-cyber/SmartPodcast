@@ -17,9 +17,12 @@ import com.example.smartpodcast.ui.adapter.EpisodeAdapter
 import com.example.smartpodcast.ui.player.PlayerFragment
 import com.example.smartpodcast.ui.player.PlayerViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.ImageButton
+import android.text.TextWatcher
+import android.text.Editable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -82,7 +85,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         // 3. Setup Mini Player
         setupMiniPlayer(view)
 
-        // 4. Collect UI States (Loading, Success, Error) from ViewModel
+        // 4. Setup Search Bar
+        val etSearch = view.findViewById<EditText>(R.id.etSearch)
+        etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                viewModel.search(s.toString())
+            }
+        })
+
+        // 5. Collect UI States (Loading, Success, Error) from ViewModel
         observeUiStates()
     }
 
