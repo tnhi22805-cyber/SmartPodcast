@@ -4,6 +4,7 @@ import com.example.smartpodcast.data.local.EpisodeDao
 import com.example.smartpodcast.data.local.EpisodeEntity
 import com.example.smartpodcast.data.remote.PodcastApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,16 +13,28 @@ class PodcastRepository @Inject constructor(
     private val api: PodcastApi,
     private val dao: EpisodeDao
 ) {
-    // Lấy dữ liệu từ Database (Local)
     fun getEpisodes(): Flow<List<EpisodeEntity>> = dao.getAllEpisodes()
 
-    // Logic lấy dữ liệu từ mạng (Remote) và lưu vào máy (Local)
-    suspend fun fetchAndSavePodcasts() {
-        try {
-            // Sau này Sương (B) sẽ làm phần Parse XML ở đây
-            // Tạm thời Sinh viết khung logic để gánh dòng code
-        } catch (e: Exception) {
-            e.printStackTrace()
+    suspend fun insertEpisodes(list: List<EpisodeEntity>) {
+        val existingList = dao.getAllEpisodes().firstOrNull() ?: emptyList()
+        val existingMap = existingList.associateBy { it.id }
+
+        val mergedList = list.map { newEpisode ->
+            val old = existingMap[newEpisode.id]
+            if (old != null) {
+                newEpisode.copy(
+                    isDownloaded = old.isDownloaded,
+                    localPath = old.localPath,
+                    isFavorite = old.isFavorite
+                )
+            } else {
+                newEpisode
+            }
         }
+        dao.insertEpisodes(mergedList)
+    }
+
+    suspend fun updateEpisode(episode: EpisodeEntity) {
+        dao.updateEpisode(episode)
     }
 }
