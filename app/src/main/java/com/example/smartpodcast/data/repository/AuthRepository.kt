@@ -5,7 +5,7 @@ import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
-
+//firebase
 @Singleton
 class AuthRepository @Inject constructor(
     private val auth: FirebaseAuth
