@@ -41,6 +41,12 @@ class PlayerFragment : Fragment(R.layout.fragment_player) {
         val description = arguments?.getString("description") ?: ""
         val imageUrl = arguments?.getString("imageUrl") ?: ""
 
+        // Hiển thị ngay lập tức (phòng hờ Flow load chậm)
+        if (arguments?.getString("title") != null) {
+            tvTitle.text = title
+            Glide.with(this).load(imageUrl).placeholder(android.R.drawable.ic_menu_report_image).into(imgLarge)
+        }
+
         // 1. Auto play with Metadata if navigated from Home
         if (url.isNotEmpty()) {
             viewModel.playEpisode(url, title, description, imageUrl)

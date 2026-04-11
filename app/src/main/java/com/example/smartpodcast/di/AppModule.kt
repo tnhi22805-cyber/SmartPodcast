@@ -70,4 +70,16 @@ object AppModule {
     fun provideRepository(api: PodcastApi, dao: EpisodeDao): PodcastRepository {
         return PodcastRepository(api, dao)
     }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): com.google.firebase.auth.FirebaseAuth {
+        return com.google.firebase.auth.FirebaseAuth.getInstance()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFirestore(): com.google.firebase.firestore.FirebaseFirestore {
+        return com.google.firebase.firestore.FirebaseFirestore.getInstance()
+    }
 }

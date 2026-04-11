@@ -35,23 +35,33 @@ class MainActivity : AppCompatActivity() {
             // Không cần làm gì thêm, việc kết nối đã đủ để kích hoạt MediaSession
         }, androidx.core.content.ContextCompat.getMainExecutor(this))
 
-        if (intent.getBooleanExtra("OPEN_PLAYER", false)) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, com.example.smartpodcast.ui.player.PlayerFragment())
-                .commit()
-        } else if (savedInstanceState == null) {
+        if (savedInstanceState == null) {
+            // Luôn đặt HomeFragment làm nền
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, HomeFragment())
                 .commit()
+
+            // Nếu khởi động thẳng từ thông báo, đẩy PlayerFragment lên trên cùng
+            if (intent.getBooleanExtra("OPEN_PLAYER", false)) {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, com.example.smartpodcast.ui.player.PlayerFragment())
+                    .addToBackStack(null) // Cho phép bấm nút Back để quay về Trang chủ
+                    .commit()
+            }
         }
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         if (intent?.getBooleanExtra("OPEN_PLAYER", false) == true) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, com.example.smartpodcast.ui.player.PlayerFragment())
-                .commit()
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+            // Nếu người dùng đang không ở màn hình Player thì mới đè lên, tránh tạo ra 2 trang Player
+            if (currentFragment !is com.example.smartpodcast.ui.player.PlayerFragment) {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, com.example.smartpodcast.ui.player.PlayerFragment())
+                    .addToBackStack(null)
+                    .commit()
+            }
         }
     }
 }
