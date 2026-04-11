@@ -22,8 +22,13 @@ object AppModule {
 
     @Provides
     @Singleton
+    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     fun provideExoPlayer(@ApplicationContext context: Context): ExoPlayer {
-        return ExoPlayer.Builder(context).build()
+        return ExoPlayer.Builder(context)
+            .setWakeMode(androidx.media3.common.C.WAKE_MODE_NETWORK)
+            .setSeekForwardIncrementMs(15000)
+            .setSeekBackIncrementMs(15000)
+            .build()
     }
 
     @Provides
@@ -54,7 +59,7 @@ object AppModule {
     @Singleton
     fun providePodcastApi(okHttpClient: OkHttpClient): PodcastApi {
         return Retrofit.Builder()
-            .baseUrl("https://google.com/") 
+            .baseUrl("https://google.com/")
             .client(okHttpClient) // Sử dụng client đã có User-Agent
             .build()
             .create(PodcastApi::class.java)

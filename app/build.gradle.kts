@@ -68,4 +68,5 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.24")
+    implementation("androidx.palette:palette-ktx:1.0.0")
 }
