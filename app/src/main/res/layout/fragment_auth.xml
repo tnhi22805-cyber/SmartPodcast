@@ -15,11 +15,11 @@
         android:textSize="36sp"
         android:textStyle="bold"
         android:fontFamily="sans-serif-black"
-        app:layout_constraintBottom_toTopOf="@+id/etEmail"
+        app:layout_constraintBottom_toTopOf="@+id/barrierForm"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintVertical_bias="0.4" />
 
     <TextView
         android:id="@+id/tvSubtitle"
@@ -33,63 +33,114 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp" />
 
-    <EditText
-        android:id="@+id/etEmail"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:background="@drawable/bg_input_rounded"
-        android:hint="Email"
-        android:textColorHint="#99FFFFFF"
-        android:textColor="#FFFFFF"
-        android:inputType="textEmailAddress"
-        android:paddingHorizontal="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/etPassword"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginBottom="16dp" />
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrierForm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="top"
+        app:constraint_referenced_ids="llWelcome,llForm" />
 
-    <EditText
-        android:id="@+id/etPassword"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:background="@drawable/bg_input_rounded"
-        android:hint="Mật khẩu"
-        android:textColorHint="#99FFFFFF"
-        android:textColor="#FFFFFF"
-        android:inputType="textPassword"
-        android:paddingHorizontal="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnLogin"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginBottom="32dp" />
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnLogin"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:background="@drawable/bg_button_primary"
-        android:text="ĐĂNG NHẬP"
-        android:textColor="#6441A5"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/btnRegister"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginBottom="16dp" />
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnRegister"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:background="@drawable/bg_button_secondary"
-        android:text="ĐĂNG KÝ TÀI KHOẢN MỚI"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:textStyle="bold"
+    <!-- Welcome State Group -->
+    <LinearLayout
+        android:id="@+id/llWelcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="32dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginBottom="32dp" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnWelcomeLogin"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_button_primary"
+            android:text="ĐĂNG NHẬP"
+            android:textColor="#6441A5"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnWelcomeRegister"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_button_secondary"
+            android:text="ĐĂNG KÝ MỚI"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Form State Group -->
+    <LinearLayout
+        android:id="@+id/llForm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/tvFormTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ĐĂNG NHẬP"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"
+            android:layout_gravity="center_horizontal" />
+
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_input_rounded"
+            android:hint="Email"
+            android:textColorHint="#99FFFFFF"
+            android:textColor="#FFFFFF"
+            android:inputType="textEmailAddress"
+            android:paddingHorizontal="20dp"
+            android:layout_marginBottom="16dp" />
+
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_input_rounded"
+            android:hint="Mật khẩu"
+            android:textColorHint="#99FFFFFF"
+            android:textColor="#FFFFFF"
+            android:inputType="textPassword"
+            android:paddingHorizontal="20dp"
+            android:layout_marginBottom="24dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnSubmit"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_button_primary"
+            android:text="TIẾP TỤC"
+            android:textColor="#6441A5"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvBackToWelcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Quay lại"
+            android:textColor="#B3FFFFFF"
+            android:textSize="14sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:padding="8dp" />
+    </LinearLayout>
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -97,7 +148,7 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:indeterminateTint="#FFFFFF"
-        app:layout_constraintTop_toBottomOf="@id/btnRegister"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
