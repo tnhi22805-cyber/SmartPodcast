@@ -19,7 +19,7 @@ class FirestoreRepository @Inject constructor(
      */
     suspend fun syncFavoriteToCloud(episode: EpisodeEntity) {
         val user = authRepository.currentUser ?: return
-        
+
         // Lưu trữ với ID bài hát làm Document ID
         val data = hashMapOf(
             "id" to episode.id,
@@ -30,7 +30,7 @@ class FirestoreRepository @Inject constructor(
             "pubDate" to episode.pubDate,
             "timestamp" to System.currentTimeMillis()
         )
-        
+
         if (episode.isFavorite) {
             usersRef.document(user.uid).collection("favorites").document(episode.id).set(data).await()
         } else {
@@ -44,7 +44,7 @@ class FirestoreRepository @Inject constructor(
     suspend fun fetchCloudFavorites(): List<EpisodeEntity> {
         val user = authRepository.currentUser ?: return emptyList()
         val result = mutableListOf<EpisodeEntity>()
-        
+
         try {
             val snapshot = usersRef.document(user.uid).collection("favorites").get().await()
             for (doc in snapshot.documents) {
