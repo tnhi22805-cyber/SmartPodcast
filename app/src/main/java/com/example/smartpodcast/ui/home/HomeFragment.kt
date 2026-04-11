@@ -20,6 +20,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.ImageButton
+import android.graphics.Color
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -75,7 +76,20 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             }
         }
 
-        // 2. Setup RecyclerView
+        // 2. Setup Filter Buttons
+        setupFilterButtons(view)
+
+        // 2.5 Setup Search Bar
+        val etSearch = view.findViewById<android.widget.EditText>(R.id.etSearch)
+        etSearch.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                viewModel.setSearchQuery(s?.toString() ?: "")
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+
+        // 3. Setup RecyclerView
         rvEpisodes.layoutManager = GridLayoutManager(requireContext(), 2)
         rvEpisodes.adapter = episodeAdapter
 
@@ -108,6 +122,39 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     }
                 }
             }
+        }
+    }
+
+    private fun setupFilterButtons(view: View) {
+        val btnAll = view.findViewById<ImageView>(R.id.btnFilterAll)
+        val btnHistory = view.findViewById<ImageView>(R.id.btnFilterHistory)
+        val btnFavorite = view.findViewById<ImageView>(R.id.btnFilterFavorite)
+        val btnDownload = view.findViewById<ImageView>(R.id.btnFilterDownload)
+
+        val buttons = listOf(btnAll, btnHistory, btnFavorite, btnDownload)
+        val setHighlight = { activeBtn: ImageView ->
+            buttons.forEach { it.setColorFilter(Color.parseColor("#888888")) }
+            activeBtn.setColorFilter(Color.parseColor("#6441A5"))
+        }
+
+        btnAll.setOnClickListener {
+            viewModel.setFilter(FilterType.ALL)
+            setHighlight(btnAll)
+        }
+        btnHistory.setOnClickListener {
+            viewModel.setFilter(FilterType.HISTORY)
+            setHighlight(btnHistory)
+            Toast.makeText(context, "Lọc Lịch Sử", Toast.LENGTH_SHORT).show()
+        }
+        btnFavorite.setOnClickListener {
+            viewModel.setFilter(FilterType.FAVORITE)
+            setHighlight(btnFavorite)
+            Toast.makeText(context, "Lọc Yêu Thích", Toast.LENGTH_SHORT).show()
+        }
+        btnDownload.setOnClickListener {
+            viewModel.setFilter(FilterType.DOWNLOAD)
+            setHighlight(btnDownload)
+            Toast.makeText(context, "Lọc Tập Đã Tải", Toast.LENGTH_SHORT).show()
         }
     }
 

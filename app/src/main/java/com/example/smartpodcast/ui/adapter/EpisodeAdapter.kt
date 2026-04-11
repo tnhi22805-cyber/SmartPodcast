@@ -38,13 +38,25 @@ class EpisodeAdapter(
     class EpisodeViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val title: TextView = view.findViewById(R.id.tvTitle)
         private val date: TextView = view.findViewById(R.id.tvPubDate)
-        private val desc: TextView = view.findViewById(R.id.tvDescription)
+        // Dùng nullable (?) để lỡ design ai gỡ mất nút thì App mài không bị nổ giỗ
+        private val desc: TextView? = view.findViewById(R.id.tvDescription)
         private val image: ImageView = view.findViewById(R.id.imgPodcast)
+        private val btnDownload: ImageView? = view.findViewById(R.id.btnDownload)
 
         fun bind(episode: EpisodeEntity) {
             title.text = episode.title
             date.text = episode.pubDate
-            desc.text = HtmlCompat.fromHtml(episode.description, HtmlCompat.FROM_HTML_MODE_LEGACY)
+            
+            desc?.text = HtmlCompat.fromHtml(episode.description, HtmlCompat.FROM_HTML_MODE_LEGACY)
+            
+            if (episode.isDownloaded) {
+                btnDownload?.setImageResource(android.R.drawable.stat_sys_download_done)
+                btnDownload?.setColorFilter(android.graphics.Color.GREEN)
+            } else {
+                btnDownload?.setImageResource(android.R.drawable.stat_sys_download)
+                btnDownload?.setColorFilter(android.graphics.Color.parseColor("#6441A5"))
+            }
+
             Glide.with(itemView.context).load(episode.imageUrl).into(image)
         }
     }
